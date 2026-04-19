@@ -39,11 +39,6 @@ class PositionStatus(str, enum.Enum):
     CLOSED = "closed"
 
 
-class EnvironmentType(str, enum.Enum):
-    PAPER = "paper"
-    LIVE = "live"
-
-
 class SignalEvent(Base):
     """Raw TradingView webhook events."""
     __tablename__ = "signal_events"
@@ -65,7 +60,6 @@ class SignalEvent(Base):
     tags = Column(JSON)
     timestamp = Column(String(50))  # ISO-8601 timestamp from TradingView
     status = Column(Enum(SignalStatus), default=SignalStatus.RECEIVED)
-    environment = Column(Enum(EnvironmentType), nullable=False)
     created_at = Column(DateTime(timezone=False), default=utc_now_naive)
     processed_at = Column(DateTime(timezone=False))
 
@@ -93,7 +87,6 @@ class OrderIntent(Base):
     product = Column(String(20), default="INTRADAY")
     validity = Column(String(20))
     tags = Column(JSON)
-    environment = Column(Enum(EnvironmentType), nullable=False)
     status = Column(Enum(OrderStatus), default=OrderStatus.RECEIVED)
     created_at = Column(DateTime(timezone=False), default=utc_now_naive)
     updated_at = Column(DateTime(timezone=False), default=utc_now_naive, onupdate=utc_now_naive)
@@ -162,7 +155,6 @@ class Position(Base):
     exit_reason = Column(String(100))
     broker_order_id = Column(String(100))
     broker_exit_order_id = Column(String(100))
-    environment = Column(Enum(EnvironmentType), nullable=False)
     created_at = Column(DateTime(timezone=False), default=utc_now_naive)
 
     # Relationships
