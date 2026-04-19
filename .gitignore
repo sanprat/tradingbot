@@ -46,4 +46,4 @@ Thumbs.db
 
 # Documentation files to exclude
 IMPLEMENTATION_*.md
-README_IMPLEMENTATION.md
+README_IMPLEMENTATION.md.worktrees/
