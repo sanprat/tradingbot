@@ -9,7 +9,7 @@ from app.tui.screens.dashboard import DashboardScreen
 from app.tui.screens.positions import PositionsScreen
 from app.tui.screens.orders import OrdersScreen
 from app.tui.screens.signals import SignalsScreen
-from app.tui.screens.manual import ManualOrderScreen
+from app.tui.screens.manual_order import ManualOrderScreen
 from app.tui.screens.settings import SettingsScreen
 from app.tui.screens.broker_config import BrokerConfigScreen
 
