@@ -4,18 +4,58 @@ Screen {
     background: $surface;
 }
 
-#heading {
+#title {
     dock: top;
-    height: auto;
+    height: 3;
     content-align: center middle;
     background: $primary;
     color: $text;
-    text-style: bold;
 }
 
-#status {
+/* DataTables */
+DataTable {
+    margin: 1 2;
+}
+
+DataTable > .datatable--cursor {
+    background: $primary-darken-1;
+}
+
+/* Status panels */
+Panel {
+    border: solid $primary;
+    margin: 1;
+}
+
+#status-panel {
+    width: 30;
+}
+
+#today-panel {
+    width: 40;
+}
+
+/* Forms */
+Input {
+    margin: 1 0;
+}
+
+Button {
+    margin: 1 2;
+}
+
+#send-button {
+    background: $success;
+}
+
+#cancel-button {
+    background: $error;
+}
+
+/* Footer help */
+#help-bar {
     dock: bottom;
-    height: auto;
-    content-align: center middle;
-    background: $surface-darken-1;
+    height: 1;
+    background: $panel;
+    color: $text-muted;
 }
