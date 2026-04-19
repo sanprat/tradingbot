@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.api import webhook, dashboard
+from app.api import settings as settings_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -61,6 +62,7 @@ app.add_middleware(
 
 app.include_router(webhook.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
+app.include_router(settings_router.router, prefix="/api")
 
 
 @app.get("/health")
