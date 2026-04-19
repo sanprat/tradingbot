@@ -15,7 +15,6 @@ from app.storage.models import (
     SignalStatus,
     OrderStatus,
     PositionStatus,
-    EnvironmentType,
 )
 
 
@@ -36,7 +35,6 @@ async def create_signal_event(
     tags: Optional[list],
     timestamp: str,
     idempotency_key: str,
-    environment: EnvironmentType,
 ) -> SignalEvent:
     """Create and persist a signal event."""
     event = SignalEvent(
@@ -56,7 +54,6 @@ async def create_signal_event(
         tags=tags,
         timestamp=timestamp,
         status=SignalStatus.RECEIVED,
-        environment=environment,
     )
     db.add(event)
     await db.commit()
@@ -91,7 +88,6 @@ async def create_order_intent(
     product: str,
     validity: Optional[str],
     tags: Optional[list],
-    environment: EnvironmentType,
 ) -> OrderIntent:
     """Create and persist an order intent."""
     intent = OrderIntent(
@@ -110,7 +106,6 @@ async def create_order_intent(
         product=product,
         validity=validity,
         tags=tags,
-        environment=environment,
     )
     db.add(intent)
     await db.commit()
@@ -197,7 +192,6 @@ async def create_position(
     product_type: str,
     stoploss: Optional[float],
     target: Optional[float],
-    environment: EnvironmentType,
 ) -> Position:
     """Create and persist a position record."""
     pos = Position(
@@ -210,7 +204,6 @@ async def create_position(
         product_type=product_type,
         stoploss=stoploss,
         target=target,
-        environment=environment,
     )
     db.add(pos)
     await db.commit()
@@ -278,14 +271,12 @@ async def create_audit_log(
 
 
 async def get_open_positions(
-    db: AsyncSession, symbol: Optional[str] = None, environment: Optional[EnvironmentType] = None
+    db: AsyncSession, symbol: Optional[str] = None
 ) -> List[Position]:
-    """Get open positions, optionally filtered by symbol and environment."""
+    """Get open positions, optionally filtered by symbol."""
     query = select(Position).filter(Position.status == PositionStatus.OPEN)
     if symbol:
         query = query.filter(Position.symbol == symbol)
-    if environment:
-        query = query.filter(Position.environment == environment)
     result = await db.execute(query)
     return result.scalars().all()
 
