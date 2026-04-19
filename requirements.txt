@@ -8,3 +8,5 @@ python-dotenv>=1.0.0
 httpx>=0.25.0
 pyotp>=2.9.0
 NorenRestApiPy>=0.0.22
+textual>=0.80.0
+cryptography>=41.0.0
