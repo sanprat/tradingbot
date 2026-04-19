@@ -2,7 +2,7 @@
 
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from datetime import datetime
@@ -15,7 +15,6 @@ from app.storage.models import (
     SignalEvent, 
     PositionStatus, 
     OrderStatus,
-    EnvironmentType,
 )
 from app.storage.repositories import get_system_setting, set_system_setting
 from app.brokers.factory import get_broker
@@ -58,7 +57,6 @@ async def get_positions(
                 "status": p.status.value,
                 "pnl": p.pnl,
                 "pnl_pct": p.pnl_pct,
-                "environment": p.environment.value,
                 "created_at": p.created_at.isoformat() if p.created_at else None,
             }
             for p in positions
@@ -93,7 +91,6 @@ async def get_orders(
                 "order_type": o.order_type,
                 "status": o.status.value,
                 "broker": o.broker,
-                "environment": o.environment.value,
                 "created_at": o.created_at.isoformat() if o.created_at else None,
             }
             for o in orders
@@ -126,7 +123,6 @@ async def get_signals(
                 "side": s.side,
                 "quantity": s.quantity,
                 "status": s.status.value,
-                "environment": s.environment.value,
                 "created_at": s.created_at.isoformat() if s.created_at else None,
             }
             for s in signals
@@ -142,7 +138,6 @@ async def get_system_status(db: AsyncSession = Depends(get_db)):
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     result = await db.execute(
         select(func.sum(Position.pnl)).filter(
-            Position.environment == EnvironmentType.PAPER,
             Position.status == PositionStatus.CLOSED,
             Position.exit_time >= today_start.isoformat(),
         )
@@ -157,10 +152,7 @@ async def get_system_status(db: AsyncSession = Depends(get_db)):
     open_positions = result.scalar() or 0
     
     broker_health = {}
-    for broker_name in ["paper"]:
-        if settings.is_live_mode:
-            broker_name = settings.DEFAULT_BROKER
-        
+    for broker_name in [settings.DEFAULT_BROKER]:
         try:
             broker = get_broker(broker_name)
             health = broker.health_check()
@@ -169,7 +161,7 @@ async def get_system_status(db: AsyncSession = Depends(get_db)):
             broker_health[broker_name] = {"status": "error", "message": str(e)}
     
     return {
-        "mode": settings.ENVIRONMENT,
+        "broker": settings.DEFAULT_BROKER,
         "kill_switch": kill_switch,
         "daily_pnl": daily_pnl,
         "open_positions": open_positions,
@@ -194,22 +186,3 @@ async def toggle_kill_switch(
     }
 
 
-@router.post("/settings/mode")
-async def switch_mode(
-    mode: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """Switch paper/live mode."""
-    if mode not in ("paper", "live"):
-        raise HTTPException(status_code=400, detail="Mode must be 'paper' or 'live'")
-    
-    settings.ENVIRONMENT = mode
-    settings.DEFAULT_BROKER = mode
-    
-    await set_system_setting(db, "environment", mode)
-    logger.info(f"Switched to {mode} mode")
-    
-    return {
-        "status": "ok",
-        "mode": mode,
-    }
