@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.storage.models import OrderIntent, Position, PositionStatus, EnvironmentType
+from app.storage.models import OrderIntent, Position, PositionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,11 @@ async def check_order_risk(db: AsyncSession, order_intent: OrderIntent) -> dict:
         if not max_notional["passed"]:
             return max_notional
 
-    max_positions = await _check_max_open_positions(db, order_intent.environment)
+    max_positions = await _check_max_open_positions(db)
     if not max_positions["passed"]:
         return max_positions
 
-    max_daily_loss = await _check_max_daily_loss(db, order_intent.environment)
+    max_daily_loss = await _check_max_daily_loss(db)
     if not max_daily_loss["passed"]:
         return max_daily_loss
 
@@ -61,7 +61,7 @@ async def _check_kill_switch(db: AsyncSession) -> dict:
 
 async def _check_broker_enabled(db: AsyncSession, broker: str) -> dict:
     """Check if target broker is enabled."""
-    if broker in ("paper", "default"):
+    if broker == "default":
         return {"passed": True, "reason": None}
     
     from app.storage.repositories import get_system_setting
@@ -93,14 +93,11 @@ async def _check_max_notional(quantity: float, price: float) -> dict:
     return {"passed": True, "reason": None}
 
 
-async def _check_max_open_positions(
-    db: AsyncSession, environment: EnvironmentType
-) -> dict:
+async def _check_max_open_positions(db: AsyncSession) -> dict:
     """Check if max open positions limit is reached."""
     result = await db.execute(
         select(func.count(Position.id)).filter(
             Position.status == PositionStatus.OPEN,
-            Position.environment == environment,
         )
     )
     open_count = result.scalar() or 0
@@ -113,15 +110,12 @@ async def _check_max_open_positions(
     return {"passed": True, "reason": None}
 
 
-async def _check_max_daily_loss(
-    db: AsyncSession, environment: EnvironmentType
-) -> dict:
+async def _check_max_daily_loss(db: AsyncSession) -> dict:
     """Check if daily loss threshold is exceeded."""
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     
     result = await db.execute(
         select(func.sum(Position.pnl)).filter(
-            Position.environment == environment,
             Position.status == PositionStatus.CLOSED,
             Position.exit_time >= today_start,
         )
