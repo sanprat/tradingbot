@@ -42,6 +42,15 @@ class TradingViewWebhookPayload(BaseModel):
     trigger_price: Optional[float] = Field(None, description="Trigger price (for stop orders)")
     validity: Optional[str] = Field(None, description="Order validity")
     broker: Optional[str] = Field(None, description="Target broker: dhan or shoonya")
+
+    @field_validator('broker')
+    @classmethod
+    def validate_broker(cls, v):
+        if v is not None:
+            allowed_brokers = {'dhan', 'shoonya'}
+            if v.lower() not in allowed_brokers:
+                raise ValueError(f'broker must be one of {allowed_brokers} or omitted (uses default)')
+        return v
     take_profit: Optional[float] = Field(None, description="Take profit level")
     stop_loss: Optional[float] = Field(None, description="Stop loss level")
     tags: Optional[list] = Field(None, description="Optional tags")

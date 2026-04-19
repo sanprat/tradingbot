@@ -24,6 +24,7 @@ class Settings:
     API_PORT = int(os.getenv("API_PORT", "8001"))
 
     DEFAULT_BROKER = os.getenv("DEFAULT_BROKER", "dhan")
+    ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
     TRADINGVIEW_WEBHOOK_SECRET = os.getenv(
         "TRADINGVIEW_WEBHOOK_SECRET", 
