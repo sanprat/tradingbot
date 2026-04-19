@@ -13,7 +13,6 @@ from app.storage.repositories import (
     create_order_intent,
     get_signal_event_by_idempotency,
 )
-from app.storage.models import EnvironmentType
 from app.core.config import settings
 
 router = APIRouter(prefix="/webhook", tags=["webhook"])
@@ -42,7 +41,7 @@ class TradingViewWebhookPayload(BaseModel):
     price: Optional[float] = Field(None, description="Limit price (for LMT orders)")
     trigger_price: Optional[float] = Field(None, description="Trigger price (for stop orders)")
     validity: Optional[str] = Field(None, description="Order validity")
-    broker: Optional[str] = Field(None, description="Target broker")
+    broker: Optional[str] = Field(None, description="Target broker: dhan or shoonya")
     take_profit: Optional[float] = Field(None, description="Take profit level")
     stop_loss: Optional[float] = Field(None, description="Stop loss level")
     tags: Optional[list] = Field(None, description="Optional tags")
@@ -104,18 +103,6 @@ async def tradingview_webhook(
                 "message": "Signal already processed",
             }
 
-        # Determine environment (paper vs live) - use settings, fallback to broker param
-        if payload.broker and payload.broker.lower() == "paper":
-            environment = EnvironmentType.PAPER
-        elif payload.broker and payload.broker.lower() == "live":
-            environment = EnvironmentType.LIVE
-        else:
-            environment = (
-                EnvironmentType.PAPER 
-                if settings.is_paper_mode 
-                else EnvironmentType.LIVE
-            )
-
         # Persist raw signal event
         signal_event = await create_signal_event(
             db=db,
@@ -134,7 +121,6 @@ async def tradingview_webhook(
             tags=payload.tags,
             timestamp=payload.timestamp,
             idempotency_key=idempotency_key,
-            environment=environment,
         )
 
         # Create order intent (will be picked up by async worker)
@@ -155,7 +141,6 @@ async def tradingview_webhook(
             product=payload.product,
             validity=payload.validity,
             tags=payload.tags,
-            environment=environment,
         )
 
         if execution_queue:
