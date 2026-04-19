@@ -1,0 +1,21 @@
+/* TradingBot TUI Styles */
+
+Screen {
+    background: $surface;
+}
+
+#heading {
+    dock: top;
+    height: auto;
+    content-align: center middle;
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+#status {
+    dock: bottom;
+    height: auto;
+    content-align: center middle;
+    background: $surface-darken-1;
+}
