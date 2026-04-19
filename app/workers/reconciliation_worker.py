@@ -7,12 +7,7 @@ from typing import Optional
 
 from app.core.database import AsyncSessionLocal
 from app.brokers.factory import get_broker
-from app.storage.models import (
-    BrokerOrder, 
-    Position, 
-    PositionStatus, 
-    EnvironmentType
-)
+from app.storage.models import BrokerOrder, Position, PositionStatus
 from app.storage.repositories import update_position, create_audit_log
 from sqlalchemy import select
 
@@ -75,28 +70,20 @@ async def _reconcile_all():
     """Reconciliation all broker state with local state."""
     from app.core.config import settings
     
-    brokers = ["paper"]
-    if settings.is_live_mode:
-        brokers.append(settings.DEFAULT_BROKER)
-    
-    for broker_name in brokers:
-        try:
-            await _reconcile_broker(broker_name)
-        except Exception as e:
-            logger.error(f"Error reconciling broker {broker_name}: {e}")
+    broker_name = settings.DEFAULT_BROKER
+    try:
+        await _reconcile_broker(broker_name)
+    except Exception as e:
+        logger.error(f"Error reconciling broker {broker_name}: {e}")
 
 
 async def _reconcile_broker(broker_name: str):
     """Reconcile state for a specific broker."""
-    if broker_name == "paper":
-        return
-    
     broker = get_broker(broker_name)
     
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(Position).filter(
-                Position.environment == EnvironmentType.LIVE,
                 Position.status == PositionStatus.OPEN,
             )
         )
