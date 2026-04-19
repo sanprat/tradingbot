@@ -23,10 +23,7 @@ class Settings:
     API_VERSION = "1.0"
     API_PORT = int(os.getenv("API_PORT", "8001"))
 
-    ENVIRONMENT = os.getenv("ENVIRONMENT", "paper").lower()
-    DEFAULT_BROKER = os.getenv("DEFAULT_BROKER", "paper")
-
-    is_production = os.getenv("ENVIRONMENT", "paper").lower() == "live"
+    DEFAULT_BROKER = os.getenv("DEFAULT_BROKER", "dhan")
 
     TRADINGVIEW_WEBHOOK_SECRET = os.getenv(
         "TRADINGVIEW_WEBHOOK_SECRET", 
@@ -67,13 +64,7 @@ class Settings:
     DHAN_CLIENT_ID = os.getenv("DHAN_CLIENT_ID", "")
     DHAN_ACCESS_TOKEN = os.getenv("DHAN_ACCESS_TOKEN", "")
 
-    @property
-    def is_paper_mode(self) -> bool:
-        return self.ENVIRONMENT == "paper"
-
-    @property
-    def is_live_mode(self) -> bool:
-        return self.ENVIRONMENT == "live"
+    
 
 
 settings = Settings()
