@@ -9,7 +9,6 @@ from app.storage.models import (
     OrderIntent,
     OrderStatus,
     SignalStatus,
-    EnvironmentType,
 )
 from app.storage.repositories import (
     create_broker_order,
