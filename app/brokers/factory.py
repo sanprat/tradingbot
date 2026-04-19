@@ -15,7 +15,6 @@ def get_broker(name: str) -> BrokerAdapter:
     Get or create a broker adapter by name.
     
     Broker names:
-    - "paper" - Paper trading simulator
     - "dhan" - Dhan live trading
     - "shoonya" - Shoonya live trading
     - "default" - Uses config DEFAULT_BROKER setting
@@ -28,10 +27,7 @@ def get_broker(name: str) -> BrokerAdapter:
     if name in _broker_cache:
         return _broker_cache[name]
     
-    if name == "paper":
-        from app.brokers.paper import PaperBroker
-        broker = PaperBroker({})
-    elif name == "dhan":
+    if name == "dhan":
         from app.brokers.dhan import DhanAdapter
         broker = DhanAdapter({
             "client_id": settings.DHAN_CLIENT_ID,
@@ -48,9 +44,7 @@ def get_broker(name: str) -> BrokerAdapter:
             "totp_secret": settings.SHOONYA_TOTP_SECRET,
         })
     else:
-        logger.warning(f"Unknown broker {name}, defaulting to paper")
-        from app.brokers.paper import PaperBroker
-        broker = PaperBroker({})
+        raise ValueError(f"Unknown broker: {name}. Valid options: dhan, shoonya")
     
     _broker_cache[name] = broker
     return broker
